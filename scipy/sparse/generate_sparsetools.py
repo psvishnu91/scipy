@@ -103,6 +103,7 @@ expandptr           v iI*I
 test_throw_error    i
 csr_has_sorted_indices    i iII
 csr_has_canonical_format  i iII
+mm_csr_mat_csc_vector v iIITIIT*T
 """
 
 # coo.h, dia.h, csgraph.h

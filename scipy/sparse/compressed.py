@@ -478,7 +478,29 @@ class _cs_matrix(_data_matrix, _minmax_mixin, IndexMixin):
 
         return result
 
+    def _mul_csr_mat_csc_vector(self, other):
+        M = self.shape[0]
+        idx_dtype = get_index_dtype((self.indptr, self.indices,
+                                     other.indptr, other.indices),
+                                    maxval=M)
+        self.sort_indices()
+        other.sort_indices()
+        result_vector = np.empty(M, dtype=upcast(self.dtype, other.dtype))
+        fn = getattr(_sparsetools, 'mm_csr_mat_csc_vector')
+        fn(M,
+           np.asarray(self.indptr, dtype=idx_dtype),
+           np.asarray(self.indices, dtype=idx_dtype),
+           self.data,
+           np.asarray(other.indptr, dtype=idx_dtype),
+           np.asarray(other.indices, dtype=idx_dtype),
+           other.data,
+           result_vector)
+        return result_vector
+
     def _mul_sparse_matrix(self, other):
+        if self.format == 'csr' and other.format == 'csc' and other.shape[1] == 1:
+            return self._mul_csr_mat_csc_vector(other)
+
         M, K1 = self.shape
         K2, N = other.shape
 
